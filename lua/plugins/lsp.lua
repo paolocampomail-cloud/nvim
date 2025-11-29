@@ -30,7 +30,7 @@ return {
                 "lua_ls",       -- Lua
                 "intelephense", -- PHP
                 "pyright",      -- Python
-                "tsserver",     -- JavaScript/TypeScript
+                "ts_ls",     -- JavaScript/TypeScript
                 "html",         -- HTML
                 "cssls",        -- CSS
                 "eslint",       -- JS/TS linting
