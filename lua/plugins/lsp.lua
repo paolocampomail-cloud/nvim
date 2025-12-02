@@ -23,60 +23,67 @@ return {
             require('cmp_nvim_lsp').default_capabilities()
         )
 
-        -- Mason setup
-        require('mason').setup()
-        require('mason-lspconfig').setup({
-            ensure_installed = {
-                "lua_ls",       -- Lua
-                "intelephense", -- PHP
-                "pyright",      -- Python
-                "ts_ls",     -- JavaScript/TypeScript
-                "html",         -- HTML
-                "cssls",        -- CSS
-                "eslint",       -- JS/TS linting
-            },
-            handlers = {
-                -- Default handler for all servers
-                function(server_name)
-                    require('lspconfig')[server_name].setup({})
-                end,
-                -- Special handler for Lua
-                lua_ls = function()
-                    require('lspconfig').lua_ls.setup({
-                        settings = {
-                            Lua = {
-                                runtime = { version = 'LuaJIT' },
-                                diagnostics = { globals = { 'vim' } },
-                                workspace = { library = { vim.env.VIMRUNTIME } },
-                            },
-                        },
-                    })
-                end,
-            },
-        })
-
-        -- Hover filter: remove only Base64 icons safely
-        vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(
-          vim.lsp.handlers.hover,
-          {
-            border = "rounded",
-            focusable = false,
-            contents_filter = function(contents)
-              local function filter_lines(value)
-                local result = {}
-                local lines = {}
-                if type(value) == "string" then
-                  lines = vim.split(value, "\n")
-                elseif type(value) == "table" and value.value then
-                  lines = vim.split(value.value, "\n")
-                end
-                for _, line in ipairs(lines) do
-                  if not line:match("^!%[.*%]") then
-                    table.insert(result, line)
-                  end
-                end
-                return table.concat(result, "\n")
-              end
+	-- Mason setup
+	require('mason').setup()
+	require('mason-lspconfig').setup({
+	    ensure_installed = {
+		"lua_ls",       -- Lua
+		"intelephense", -- PHP
+		"pyright",      -- Python
+		"vtsls",     -- JavaScript/TypeScript
+		"html",         -- HTML
+		"cssls",        -- CSS
+		"eslint",       -- JS/TS linting
+		"rust_analyzer", -- <--- ADD THIS LINE
+	    },
+	    handlers = {
+		-- Default handler for all servers
+		function(server_name)
+		    require('lspconfig')[server_name].setup({})
+		end,
+		-- Special handler for Lua
+		lua_ls = function()
+		    require('lspconfig').lua_ls.setup({
+			settings = {
+			    Lua = {
+				runtime = { version = 'LuaJIT' },
+				diagnostics = { globals = { 'vim' } },
+				workspace = { library = { vim.env.VIMRUNTIME } },
+			    },
+			},
+		    })
+		end,
+		-- <--- ADD THIS BLOCK START
+		-- Explicitly tell Mason NOT to set up rust_analyzer via lspconfig,
+		-- because rustaceanvim handles it.
+		rust_analyzer = function()
+		    return true
+		end,
+		-- <--- ADD THIS BLOCK END
+	    },
+	})
+	-- Hover filter: remove only Base64 icons safely
+	vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(
+	    vim.lsp.handlers.hover,
+	    {
+		border = "rounded",
+		focusable = false,
+		contents_filter = function(contents)
+		    local function filter_lines(value)
+			local result = {}
+			local lines = {}
+			if type(value) == "string" then
+			    lines = vim.split(value, "\n")
+			elseif type(value) == "table" and value.value then
+			    lines = vim.split(value.value, "\n")
+			end
+			for _, line in ipairs(lines) do
+			    if not line:match("^!%[.*%]") then
+				table.insert(result, line)
+			    end
+			end
+			return table.concat(result, "\n")
+		    end
 
               if type(contents) == "string" then
                 return filter_lines(contents)
